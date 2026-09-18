@@ -9,18 +9,25 @@ import vfrolenko.pr2.exception.DuplicateBookException;
 import vfrolenko.pr2.exception.InvalidBookStatusTransitionException;
 import vfrolenko.pr2.exception.ResourceNotFoundException;
 import vfrolenko.pr2.repository.BookRepository;
+import vfrolenko.pr2.service.strategy.BookPricingStrategy;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final Map<String, BookPricingStrategy> pricingStrategies;
 
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookRepository bookRepository, List<BookPricingStrategy> pricingStrategies) {
         this.bookRepository = bookRepository;
+        this.pricingStrategies = pricingStrategies.stream()
+                .collect(Collectors.toMap(BookPricingStrategy::name, Function.identity()));
     }
 
     public List<Book> findAll() {
@@ -29,6 +36,18 @@ public class BookService {
 
     public Optional<Book> findById(UUID id) {
         return bookRepository.findById(id);
+    }
+
+    public double calculatePrice(UUID id, String strategyName) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Book with id '%s' not found".formatted(id)));
+
+        BookPricingStrategy strategy = Optional.ofNullable(pricingStrategies.get(strategyName.toUpperCase()))
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown pricing strategy: '%s'".formatted(strategyName)));
+
+        return strategy.calculatePrice(book);
     }
 
     public Book create(CreateBookRequest request) {
