@@ -5,31 +5,32 @@ import vfrolenko.pr2.dto.book.CreateBookRequest;
 import vfrolenko.pr2.dto.book.UpdateBookRequest;
 import vfrolenko.pr2.entity.Book;
 import vfrolenko.pr2.exception.ResourceNotFoundException;
+import vfrolenko.pr2.repository.BookRepository;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class BookService {
 
-    private final Map<UUID, Book> storage = new ConcurrentHashMap<>();
+    private final BookRepository bookRepository;
+
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
 
     public List<Book> findAll() {
-        return new ArrayList<>(storage.values());
+        return bookRepository.findAll();
     }
 
     public Optional<Book> findById(UUID id) {
-        return Optional.ofNullable(storage.get(id));
+        return bookRepository.findById(id);
     }
 
     public Book create(CreateBookRequest request) {
-        UUID id = UUID.randomUUID();
         Book book = new Book(
-                id,
+                UUID.randomUUID(),
                 request.title(),
                 request.author(),
                 request.genre(),
@@ -37,12 +38,11 @@ public class BookService {
                 request.price(),
                 request.pages()
         );
-        storage.put(id, book);
-        return book;
+        return bookRepository.save(book);
     }
 
     public Book update(UUID id, UpdateBookRequest request) {
-        if (!storage.containsKey(id)) {
+        if (!bookRepository.existsById(id)) {
             throw new ResourceNotFoundException("Book with id '%s' not found".formatted(id));
         }
         Book updated = new Book(
@@ -54,14 +54,13 @@ public class BookService {
                 request.price(),
                 request.pages()
         );
-        storage.put(id, updated);
-        return updated;
+        return bookRepository.save(updated);
     }
 
     public void delete(UUID id) {
-        if (!storage.containsKey(id)) {
+        if (!bookRepository.existsById(id)) {
             throw new ResourceNotFoundException("Book with id '%s' not found".formatted(id));
         }
-        storage.remove(id);
+        bookRepository.deleteById(id);
     }
 }
