@@ -7,6 +7,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.http.HttpStatusCode;
 
 import java.net.URI;
 import java.time.Instant;
@@ -60,6 +61,16 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST, "Invalid or unrecognized fields in request body");
         pd.setTitle("Bad Request");
         pd.setType(URI.create("/api/v1/errors/bad-request"));
+        pd.setProperty("timestamp", Instant.now());
+        return pd;
+    }
+
+    @ExceptionHandler(InvalidBookStatusTransitionException.class)
+    public ProblemDetail handleInvalidTransition(InvalidBookStatusTransitionException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(
+                HttpStatusCode.valueOf(422), ex.getMessage());
+        pd.setTitle("Invalid Status Transition");
+        pd.setType(URI.create("/api/v1/errors/invalid-transition"));
         pd.setProperty("timestamp", Instant.now());
         return pd;
     }

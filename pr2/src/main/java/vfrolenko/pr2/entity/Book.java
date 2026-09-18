@@ -9,5 +9,6 @@ public record Book(
         String genre,
         int publicationYear,
         double price,
-        int pages
+        int pages,
+        BookStatus status
 ) {}

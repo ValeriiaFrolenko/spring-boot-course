@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import vfrolenko.pr2.dto.book.CreateBookRequest;
 import vfrolenko.pr2.dto.book.UpdateBookRequest;
 import vfrolenko.pr2.entity.Book;
+import vfrolenko.pr2.entity.BookStatus;
+import vfrolenko.pr2.exception.InvalidBookStatusTransitionException;
 import vfrolenko.pr2.exception.ResourceNotFoundException;
 import vfrolenko.pr2.repository.BookRepository;
 
@@ -36,15 +38,21 @@ public class BookService {
                 request.genre(),
                 request.publicationYear(),
                 request.price(),
-                request.pages()
+                request.pages(),
+                BookStatus.DRAFT
         );
         return bookRepository.save(book);
     }
 
     public Book update(UUID id, UpdateBookRequest request) {
-        if (!bookRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Book with id '%s' not found".formatted(id));
+        Book existing = bookRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Book with id '%s' not found".formatted(id)));
+
+        if (!existing.status().canTransitionTo(request.status())) {
+            throw new InvalidBookStatusTransitionException(existing.status(), request.status());
         }
+
         Book updated = new Book(
                 id,
                 request.title(),
@@ -52,7 +60,8 @@ public class BookService {
                 request.genre(),
                 request.publicationYear(),
                 request.price(),
-                request.pages()
+                request.pages(),
+                request.status()
         );
         return bookRepository.save(updated);
     }

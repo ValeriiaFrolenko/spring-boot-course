@@ -1,6 +1,7 @@
 package vfrolenko.pr2.dto.book;
 
 import vfrolenko.pr2.entity.Book;
+import vfrolenko.pr2.entity.BookStatus;
 
 import java.util.UUID;
 
@@ -11,7 +12,8 @@ public record BookResponse(
         String genre,
         int publicationYear,
         double price,
-        int pages
+        int pages,
+        BookStatus status
 ) {
     public static BookResponse from(Book book) {
         return new BookResponse(
@@ -21,7 +23,8 @@ public record BookResponse(
                 book.genre(),
                 book.publicationYear(),
                 book.price(),
-                book.pages()
+                book.pages(),
+                book.status()
         );
     }
 }
