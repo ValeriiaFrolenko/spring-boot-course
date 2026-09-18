@@ -3,10 +3,8 @@ package vfrolenko.pr2.dto.book;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import vfrolenko.pr2.entity.BookStatus;
 
 public record UpdateBookRequest(
 
@@ -31,8 +29,5 @@ public record UpdateBookRequest(
 
         @Min(value = 1, message = "Pages must be at least 1")
         @Max(value = 10000, message = "Pages must be at most 10000")
-        int pages,
-
-        @NotNull(message = "Status must not be null")
-        BookStatus status
+        int pages
 ) {}

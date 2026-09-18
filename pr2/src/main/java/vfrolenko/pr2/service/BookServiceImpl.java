@@ -3,6 +3,7 @@ package vfrolenko.pr2.service;
 import org.springframework.stereotype.Service;
 import vfrolenko.pr2.dto.book.CreateBookRequest;
 import vfrolenko.pr2.dto.book.UpdateBookRequest;
+import vfrolenko.pr2.dto.book.UpdateBookStatusRequest;
 import vfrolenko.pr2.entity.Book;
 import vfrolenko.pr2.entity.BookStatus;
 import vfrolenko.pr2.exception.DuplicateBookException;
@@ -84,10 +85,6 @@ public class BookServiceImpl implements BookService {
             throw new DuplicateBookException(request.title(), request.author());
         }
 
-        if (!existing.status().canTransitionTo(request.status())) {
-            throw new InvalidBookStatusTransitionException(existing.status(), request.status());
-        }
-
         Book updated = new Book(
                 id,
                 request.title(),
@@ -96,6 +93,29 @@ public class BookServiceImpl implements BookService {
                 request.publicationYear(),
                 request.price(),
                 request.pages(),
+                existing.status()
+        );
+        return bookRepository.save(updated);
+    }
+
+    @Override
+    public Book updateStatus(UUID id, UpdateBookStatusRequest request) {
+        Book existing = bookRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Book with id '%s' not found".formatted(id)));
+
+        if (!existing.status().canTransitionTo(request.status())) {
+            throw new InvalidBookStatusTransitionException(existing.status(), request.status());
+        }
+
+        Book updated = new Book(
+                id,
+                existing.title(),
+                existing.author(),
+                existing.genre(),
+                existing.publicationYear(),
+                existing.price(),
+                existing.pages(),
                 request.status()
         );
         return bookRepository.save(updated);

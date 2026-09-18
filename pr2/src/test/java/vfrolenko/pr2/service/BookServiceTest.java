@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import vfrolenko.pr2.dto.book.CreateBookRequest;
 import vfrolenko.pr2.dto.book.UpdateBookRequest;
+import vfrolenko.pr2.dto.book.UpdateBookStatusRequest;
 import vfrolenko.pr2.entity.Book;
 import vfrolenko.pr2.entity.BookStatus;
 import vfrolenko.pr2.exception.DuplicateBookException;
@@ -60,8 +61,12 @@ class BookServiceTest {
         return new CreateBookRequest("Clean Code", "Robert Martin", "Programming", 2008, 29.99, 431);
     }
 
-    private UpdateBookRequest updateRequestWithStatus(BookStatus status) {
-        return new UpdateBookRequest("Clean Code", "Robert Martin", "Programming", 2008, 29.99, 431, status);
+    private UpdateBookRequest validUpdateRequest() {
+        return new UpdateBookRequest("Clean Code", "Robert Martin", "Programming", 2008, 29.99, 431);
+    }
+
+    private UpdateBookStatusRequest statusRequest(BookStatus status) {
+        return new UpdateBookStatusRequest(status);
     }
 
     // --- create ---
@@ -93,32 +98,21 @@ class BookServiceTest {
     // --- update ---
 
     @Test
-    void update_validTransition_returnsUpdatedBook() {
+    void update_validRequest_returnsUpdatedBook() {
         when(bookRepository.findById(ID)).thenReturn(Optional.of(draftBook()));
         when(bookRepository.save(any(Book.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Book result = bookService.update(ID, updateRequestWithStatus(BookStatus.PUBLISHED));
+        Book result = bookService.update(ID, validUpdateRequest());
 
-        assertThat(result.status()).isEqualTo(BookStatus.PUBLISHED);
-    }
-
-    @Test
-    void update_invalidTransition_throwsInvalidBookStatusTransitionException() {
-        when(bookRepository.findById(ID)).thenReturn(Optional.of(publishedBook()));
-
-        assertThatThrownBy(() -> bookService.update(ID, updateRequestWithStatus(BookStatus.DRAFT)))
-                .isInstanceOf(InvalidBookStatusTransitionException.class)
-                .hasMessageContaining("PUBLISHED")
-                .hasMessageContaining("DRAFT");
-
-        verify(bookRepository, never()).save(any());
+        assertThat(result.title()).isEqualTo("Clean Code");
+        assertThat(result.status()).isEqualTo(BookStatus.DRAFT);
     }
 
     @Test
     void update_nonExistingId_throwsResourceNotFoundException() {
         when(bookRepository.findById(ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> bookService.update(ID, updateRequestWithStatus(BookStatus.PUBLISHED)))
+        assertThatThrownBy(() -> bookService.update(ID, validUpdateRequest()))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining(ID.toString());
     }
@@ -129,10 +123,41 @@ class BookServiceTest {
         when(bookRepository.findById(ID)).thenReturn(Optional.of(existing));
         when(bookRepository.existsByTitleAndAuthor("Clean Code", "Robert Martin")).thenReturn(true);
 
-        assertThatThrownBy(() -> bookService.update(ID, updateRequestWithStatus(BookStatus.DRAFT)))
+        assertThatThrownBy(() -> bookService.update(ID, validUpdateRequest()))
                 .isInstanceOf(DuplicateBookException.class);
 
         verify(bookRepository, never()).save(any());
+    }
+
+    @Test
+    void updateStatus_validTransition_returnsUpdatedBook() {
+        when(bookRepository.findById(ID)).thenReturn(Optional.of(draftBook()));
+        when(bookRepository.save(any(Book.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Book result = bookService.updateStatus(ID, statusRequest(BookStatus.PUBLISHED));
+
+        assertThat(result.status()).isEqualTo(BookStatus.PUBLISHED);
+    }
+
+    @Test
+    void updateStatus_invalidTransition_throwsInvalidBookStatusTransitionException() {
+        when(bookRepository.findById(ID)).thenReturn(Optional.of(publishedBook()));
+
+        assertThatThrownBy(() -> bookService.updateStatus(ID, statusRequest(BookStatus.DRAFT)))
+                .isInstanceOf(InvalidBookStatusTransitionException.class)
+                .hasMessageContaining("PUBLISHED")
+                .hasMessageContaining("DRAFT");
+
+        verify(bookRepository, never()).save(any());
+    }
+
+    @Test
+    void updateStatus_nonExistingId_throwsResourceNotFoundException() {
+        when(bookRepository.findById(ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookService.updateStatus(ID, statusRequest(BookStatus.PUBLISHED)))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining(ID.toString());
     }
 
     // --- delete ---
@@ -192,5 +217,75 @@ class BookServiceTest {
 
         assertThatThrownBy(() -> bookService.calculatePrice(ID, "STANDARD"))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    // --- update boundary: same-state transitions ---
+
+
+    @Test
+    void updateStatus_sameStatusDraft_throwsInvalidBookStatusTransitionException() {
+        when(bookRepository.findById(ID)).thenReturn(Optional.of(draftBook()));
+
+        assertThatThrownBy(() -> bookService.updateStatus(ID, statusRequest(BookStatus.DRAFT)))
+                .isInstanceOf(InvalidBookStatusTransitionException.class)
+                .hasMessageContaining("DRAFT");
+
+        verify(bookRepository, never()).save(any());
+    }
+
+    @Test
+    void updateStatus_sameStatusArchived_throwsInvalidBookStatusTransitionException() {
+        Book archivedBook = new Book(ID, "Clean Code", "Robert Martin", "Programming", 2008, 29.99, 431, BookStatus.ARCHIVED);
+        when(bookRepository.findById(ID)).thenReturn(Optional.of(archivedBook));
+
+        assertThatThrownBy(() -> bookService.updateStatus(ID, statusRequest(BookStatus.ARCHIVED)))
+                .isInstanceOf(InvalidBookStatusTransitionException.class)
+                .hasMessageContaining("ARCHIVED");
+
+        verify(bookRepository, never()).save(any());
+    }
+
+    @Test
+    void updateStatus_draftToArchived_throwsInvalidBookStatusTransitionException() {
+        when(bookRepository.findById(ID)).thenReturn(Optional.of(draftBook()));
+
+        assertThatThrownBy(() -> bookService.updateStatus(ID, statusRequest(BookStatus.ARCHIVED)))
+                .isInstanceOf(InvalidBookStatusTransitionException.class)
+                .hasMessageContaining("DRAFT")
+                .hasMessageContaining("ARCHIVED");
+
+        verify(bookRepository, never()).save(any());
+    }
+
+    // --- calculatePrice boundary ---
+
+    @Test
+    void calculatePrice_emptyStrategyName_throwsIllegalArgumentException() {
+        when(bookRepository.findById(ID)).thenReturn(Optional.of(draftBook()));
+
+        assertThatThrownBy(() -> bookService.calculatePrice(ID, ""))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void calculatePrice_nullStrategyName_throwsNullPointerException() {
+        when(bookRepository.findById(ID)).thenReturn(Optional.of(draftBook()));
+
+        assertThatThrownBy(() -> bookService.calculatePrice(ID, null))
+                .isInstanceOf(NullPointerException.class);
+    }
+
+    // --- duplicate case-insensitive ---
+
+    @Test
+    void create_duplicateTitleDifferentCase_throwsDuplicateBookException() {
+        when(bookRepository.existsByTitleAndAuthor("clean code", "robert martin")).thenReturn(true);
+
+        CreateBookRequest request = new CreateBookRequest("clean code", "robert martin", "Programming", 2008, 29.99, 431);
+
+        assertThatThrownBy(() -> bookService.create(request))
+                .isInstanceOf(DuplicateBookException.class);
+
+        verify(bookRepository, never()).save(any());
     }
 }

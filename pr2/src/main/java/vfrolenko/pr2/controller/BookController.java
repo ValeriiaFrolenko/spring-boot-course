@@ -7,6 +7,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import vfrolenko.pr2.dto.book.BookResponse;
 import vfrolenko.pr2.dto.book.CreateBookRequest;
 import vfrolenko.pr2.dto.book.UpdateBookRequest;
+import vfrolenko.pr2.dto.book.UpdateBookStatusRequest;
 import vfrolenko.pr2.exception.ResourceNotFoundException;
 import vfrolenko.pr2.service.BookService;
 
@@ -70,5 +71,13 @@ public class BookController {
             @PathVariable UUID id,
             @RequestParam(defaultValue = "STANDARD") String strategy) {
         return ResponseEntity.ok(bookService.calculatePrice(id, strategy));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<BookResponse> updateStatus(
+            @PathVariable UUID id,
+            @RequestBody @Valid UpdateBookStatusRequest request) {
+        BookResponse updated = BookResponse.from(bookService.updateStatus(id, request));
+        return ResponseEntity.ok(updated);
     }
 }

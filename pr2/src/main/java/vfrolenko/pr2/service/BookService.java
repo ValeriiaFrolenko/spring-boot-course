@@ -2,6 +2,7 @@ package vfrolenko.pr2.service;
 
 import vfrolenko.pr2.dto.book.CreateBookRequest;
 import vfrolenko.pr2.dto.book.UpdateBookRequest;
+import vfrolenko.pr2.dto.book.UpdateBookStatusRequest;
 import vfrolenko.pr2.entity.Book;
 
 import java.util.List;
@@ -15,4 +16,5 @@ public interface BookService {
     Book update(UUID id, UpdateBookRequest request);
     void delete(UUID id);
     double calculatePrice(UUID id, String strategyName);
+    Book updateStatus(UUID id, UpdateBookStatusRequest request);
 }
