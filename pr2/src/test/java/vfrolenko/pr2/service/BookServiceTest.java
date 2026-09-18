@@ -45,7 +45,7 @@ class BookServiceTest {
                 new StandardPricingStrategy(),
                 new DiscountedPricingStrategy()
         );
-        bookService = new BookService(bookRepository, strategies);
+        bookService = new BookServiceImpl(bookRepository, strategies);
     }
 
     private Book draftBook() {
