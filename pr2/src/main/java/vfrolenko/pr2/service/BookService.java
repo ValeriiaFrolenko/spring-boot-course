@@ -5,6 +5,7 @@ import vfrolenko.pr2.dto.book.CreateBookRequest;
 import vfrolenko.pr2.dto.book.UpdateBookRequest;
 import vfrolenko.pr2.entity.Book;
 import vfrolenko.pr2.entity.BookStatus;
+import vfrolenko.pr2.exception.DuplicateBookException;
 import vfrolenko.pr2.exception.InvalidBookStatusTransitionException;
 import vfrolenko.pr2.exception.ResourceNotFoundException;
 import vfrolenko.pr2.repository.BookRepository;
@@ -31,6 +32,9 @@ public class BookService {
     }
 
     public Book create(CreateBookRequest request) {
+        if (bookRepository.existsByTitleAndAuthor(request.title(), request.author())) {
+            throw new DuplicateBookException(request.title(), request.author());
+        }
         Book book = new Book(
                 UUID.randomUUID(),
                 request.title(),
@@ -48,6 +52,13 @@ public class BookService {
         Book existing = bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Book with id '%s' not found".formatted(id)));
+
+        boolean titleOrAuthorChanged = !existing.title().equalsIgnoreCase(request.title())
+                || !existing.author().equalsIgnoreCase(request.author());
+
+        if (titleOrAuthorChanged && bookRepository.existsByTitleAndAuthor(request.title(), request.author())) {
+            throw new DuplicateBookException(request.title(), request.author());
+        }
 
         if (!existing.status().canTransitionTo(request.status())) {
             throw new InvalidBookStatusTransitionException(existing.status(), request.status());

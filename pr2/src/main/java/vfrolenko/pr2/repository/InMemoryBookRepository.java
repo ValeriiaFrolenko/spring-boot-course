@@ -40,4 +40,11 @@ public class InMemoryBookRepository implements BookRepository {
     public void deleteById(UUID id) {
         storage.remove(id);
     }
+
+    @Override
+    public boolean existsByTitleAndAuthor(String title, String author) {
+        return storage.values().stream()
+                .anyMatch(book -> book.title().equalsIgnoreCase(title)
+                        && book.author().equalsIgnoreCase(author));
+    }
 }

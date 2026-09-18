@@ -74,4 +74,13 @@ public class GlobalExceptionHandler {
         pd.setProperty("timestamp", Instant.now());
         return pd;
     }
+
+    @ExceptionHandler(DuplicateBookException.class)
+    public ProblemDetail handleDuplicate(DuplicateBookException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(409), ex.getMessage());
+        pd.setTitle("Duplicate Book");
+        pd.setType(URI.create("/api/v1/errors/duplicate"));
+        pd.setProperty("timestamp", Instant.now());
+        return pd;
+    }
 }

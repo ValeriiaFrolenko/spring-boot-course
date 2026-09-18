@@ -12,4 +12,5 @@ public interface BookRepository {
     boolean existsById(UUID id);
     Book save(Book book);
     void deleteById(UUID id);
+    boolean existsByTitleAndAuthor(String title, String author);
 }
