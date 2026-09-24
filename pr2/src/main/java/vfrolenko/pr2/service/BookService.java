@@ -17,4 +17,5 @@ public interface BookService {
     void delete(UUID id);
     double calculatePrice(UUID id, String strategyName);
     Book updateStatus(UUID id, UpdateBookStatusRequest request);
+    List<Book> searchByName(String name);
 }

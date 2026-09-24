@@ -47,4 +47,11 @@ public class InMemoryBookRepository implements BookRepository {
                 .anyMatch(book -> book.title().equalsIgnoreCase(title)
                         && book.author().equalsIgnoreCase(author));
     }
+
+    @Override
+    public List<Book> findByTitleContaining(String name) {
+        return storage.values().stream()
+                .filter(book -> book.title().toLowerCase().contains(name.toLowerCase()))
+                .toList();
+    }
 }

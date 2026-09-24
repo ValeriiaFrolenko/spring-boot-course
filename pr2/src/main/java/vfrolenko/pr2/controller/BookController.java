@@ -33,6 +33,14 @@ public class BookController {
         return ResponseEntity.ok(books);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<BookResponse>> searchByName(@RequestParam String name) {
+        List<BookResponse> books = bookService.searchByName(name).stream()
+                .map(BookResponse::from)
+                .toList();
+        return ResponseEntity.ok(books);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<BookResponse> getById(@PathVariable UUID id) {
         return bookService.findById(id)

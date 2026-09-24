@@ -13,4 +13,5 @@ public interface BookRepository {
     Book save(Book book);
     void deleteById(UUID id);
     boolean existsByTitleAndAuthor(String title, String author);
+    List<Book> findByTitleContaining(String name);
 }

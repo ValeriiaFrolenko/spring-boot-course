@@ -42,6 +42,11 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public List<Book> searchByName(String name) {
+        return bookRepository.findByTitleContaining(name);
+    }
+
+    @Override
     public double calculatePrice(UUID id, String strategyName) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(

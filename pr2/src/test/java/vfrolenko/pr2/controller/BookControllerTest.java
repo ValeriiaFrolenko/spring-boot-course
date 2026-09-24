@@ -314,4 +314,26 @@ class BookControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
     }
+
+    // --- searchByName ---
+
+    @Test
+    void searchByName_matchFound_returnsOkWithList() throws Exception {
+        when(bookService.searchByName("Clean")).thenReturn(List.of(
+                new vfrolenko.pr2.entity.Book(ID, "Clean Code", "Robert Martin", "Programming", 2008, 29.99, 431, BookStatus.DRAFT)));
+
+        mockMvc.perform(get(BASE_URL + "/search").param("name", "Clean"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Clean Code"));
+    }
+
+    @Test
+    void searchByName_noMatch_returnsOkWithEmptyList() throws Exception {
+        when(bookService.searchByName("XYZ")).thenReturn(List.of());
+
+        mockMvc.perform(get(BASE_URL + "/search").param("name", "XYZ"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+    }
 }
