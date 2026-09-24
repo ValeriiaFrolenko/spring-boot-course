@@ -45,12 +45,11 @@ public class JdbcBookRepository implements BookRepository {
 
     @Override
     public boolean existsById(UUID id) {
-        Integer count = jdbcClient
-                .sql("SELECT COUNT(*) FROM books WHERE id = :id")
+        return jdbcClient
+                .sql("SELECT EXISTS (SELECT 1 FROM books WHERE id = :id)")
                 .param("id", id.toString())
-                .query(Integer.class)
+                .query(Boolean.class)
                 .single();
-        return count != null && count > 0;
     }
 
     @Override
@@ -106,13 +105,18 @@ public class JdbcBookRepository implements BookRepository {
 
     @Override
     public boolean existsByTitleAndAuthor(String title, String author) {
-        Integer count = jdbcClient
-                .sql("SELECT COUNT(*) FROM books WHERE LOWER(title) = LOWER(:title) AND LOWER(author) = LOWER(:author)")
+        return jdbcClient
+                .sql("""
+                    SELECT EXISTS (
+                        SELECT 1 FROM books
+                        WHERE LOWER(title) = LOWER(:title)
+                          AND LOWER(author) = LOWER(:author)
+                    )
+                    """)
                 .param("title", title)
                 .param("author", author)
-                .query(Integer.class)
+                .query(Boolean.class)
                 .single();
-        return count != null && count > 0;
     }
 
     @Override
