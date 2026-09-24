@@ -4,10 +4,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import vfrolenko.pr2.entity.Book;
-import vfrolenko.pr2.entity.BookStatus;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,33 +19,27 @@ public class JdbcBookRepository implements BookRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    private static Book mapRow(ResultSet rs, int rowNum) throws SQLException {
-        return new Book(
-                UUID.fromString(rs.getString("id")),
-                rs.getString("title"),
-                rs.getString("author"),
-                rs.getString("genre"),
-                rs.getInt("publication_year"),
-                rs.getDouble("price"),
-                rs.getInt("pages"),
-                BookStatus.valueOf(rs.getString("status"))
-        );
-    }
-
     @Override
     public List<Book> findAll() {
         return jdbcClient
-                .sql("SELECT id, title, author, genre, publication_year, price, pages, status FROM books")
-                .query(JdbcBookRepository::mapRow)
+                .sql("""
+                        SELECT id, title, author, genre, publication_year, price, pages, status
+                        FROM books
+                        """)
+                .query(Book.class)
                 .list();
     }
 
     @Override
     public Optional<Book> findById(UUID id) {
         return jdbcClient
-                .sql("SELECT id, title, author, genre, publication_year, price, pages, status FROM books WHERE id = :id")
+                .sql("""
+                        SELECT id, title, author, genre, publication_year, price, pages, status
+                        FROM books
+                        WHERE id = :id
+                        """)
                 .param("id", id.toString())
-                .query(JdbcBookRepository::mapRow)
+                .query(Book.class)
                 .optional();
     }
 
@@ -127,9 +118,13 @@ public class JdbcBookRepository implements BookRepository {
     @Override
     public List<Book> findByTitleContaining(String name) {
         return jdbcClient
-                .sql("SELECT id, title, author, genre, publication_year, price, pages, status FROM books WHERE LOWER(title) LIKE LOWER(:name)")
+                .sql("""
+                        SELECT id, title, author, genre, publication_year, price, pages, status
+                        FROM books
+                        WHERE LOWER(title) LIKE LOWER(:name)
+                        """)
                 .param("name", "%" + name + "%")
-                .query(JdbcBookRepository::mapRow)
+                .query(Book.class)
                 .list();
     }
 }
