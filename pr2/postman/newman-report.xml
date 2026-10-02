@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Bookstore API - TraceId tests" tests="3" time="0.066">
+  <testsuite name="Create book (seed data)" id="f2be8dbf-2d14-4f68-b596-56f6bd073365" timestamp="2026-10-02T00:00:01.329Z" tests="1" failures="0" errors="0" time="0.042">
+    <testcase name="Response status is 201 Created" time="0.042" classname="CreateBookSeedData"/>
+  </testsuite>
+  <testsuite name="Get all books (seed id)" id="21934dee-8a59-4d79-a56c-1c925badabd3" timestamp="2026-10-02T00:00:01.329Z" tests="2" failures="0" errors="0" time="0.013">
+    <testcase name="Response status is 200" time="0.013" classname="GetAllBooksSeedId"/>
+    <testcase name="Book list is not empty" time="0.013" classname="GetAllBooksSeedId"/>
+  </testsuite>
+  <testsuite name="Get book by id (trace check)" id="bc9ade8f-650d-4159-935f-8f332b88e451" timestamp="2026-10-02T00:00:01.329Z" tests="3" failures="0" errors="0" time="0.011">
+    <testcase name="Response status is 200" time="0.011" classname="GetBookByIdTraceCheck"/>
+    <testcase name="X-Trace-Id header is present" time="0.011" classname="GetBookByIdTraceCheck"/>
+    <testcase name="X-Trace-Id is not empty" time="0.011" classname="GetBookByIdTraceCheck"/>
+  </testsuite>
+</testsuites>
