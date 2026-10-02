@@ -1,6 +1,8 @@
 package vfrolenko.pr2.controller;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -18,6 +20,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/books")
 public class BookController {
+
+    private static final Logger log = LoggerFactory.getLogger(BookController.class);
 
     private final BookService bookService;
 
@@ -43,6 +47,7 @@ public class BookController {
 
     @GetMapping("/{id}")
     public ResponseEntity<BookResponse> getById(@PathVariable UUID id) {
+        log.info("Fetching book by id {}", id);
         return bookService.findById(id)
                 .map(BookResponse::from)
                 .map(ResponseEntity::ok)
