@@ -1,0 +1,113 @@
+{
+  "info": {
+    "name": "Bookstore API - TraceId tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create book (seed data)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Newman Test Book {{$randomUUID}}\",\n  \"author\": \"Test Author\",\n  \"genre\": \"Fiction\",\n  \"publicationYear\": 2024,\n  \"price\": 9.99,\n  \"pages\": 100\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/books",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "books"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Response status is 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const location = pm.response.headers.get(\"Location\");",
+              "if (location) {",
+              "    const id = location.split(\"/\").pop();",
+              "    pm.environment.set(\"bookId\", id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get all books (seed id)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/books",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "books"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Response status is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const books = pm.response.json();",
+              "pm.test(\"Book list is not empty\", function () {",
+              "    pm.expect(books.length).to.be.greaterThan(0);",
+              "});",
+              "",
+              "if (books.length > 0) {",
+              "    pm.environment.set(\"bookId\", books[0].id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get book by id (trace check)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/books/{{bookId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "books", "{{bookId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Response status is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"X-Trace-Id header is present\", function () {",
+              "    pm.response.to.have.header(\"X-Trace-Id\");",
+              "});",
+              "",
+              "pm.test(\"X-Trace-Id is not empty\", function () {",
+              "    const traceId = pm.response.headers.get(\"X-Trace-Id\");",
+              "    pm.expect(traceId).to.be.a('string').and.to.have.length.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}
