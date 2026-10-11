@@ -38,7 +38,7 @@ public class JdbcBookRepository implements BookRepository {
                         FROM books
                         WHERE id = :id
                         """)
-                .param("id", id.toString())
+                .param("id", id)
                 .query(Book.class)
                 .optional();
     }
@@ -46,10 +46,10 @@ public class JdbcBookRepository implements BookRepository {
     @Override
     public boolean existsById(UUID id) {
         return jdbcClient
-                .sql("SELECT EXISTS (SELECT 1 FROM books WHERE id = :id)")
-                .param("id", id.toString())
-                .query(Boolean.class)
-                .single();
+                .sql("SELECT COUNT(*) FROM books WHERE id = :id")
+                .param("id", id)
+                .query(Integer.class)
+                .single() > 0;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class JdbcBookRepository implements BookRepository {
                                 status = :status
                             WHERE id = :id
                             """)
-                    .param("id", book.id().toString())
+                    .param("id", book.id())
                     .param("title", book.title())
                     .param("author", book.author())
                     .param("genre", book.genre())
@@ -82,7 +82,7 @@ public class JdbcBookRepository implements BookRepository {
                             INSERT INTO books (id, title, author, genre, publication_year, price, pages, status)
                             VALUES (:id, :title, :author, :genre, :publicationYear, :price, :pages, :status)
                             """)
-                    .param("id", book.id().toString())
+                    .param("id", book.id())
                     .param("title", book.title())
                     .param("author", book.author())
                     .param("genre", book.genre())
@@ -99,7 +99,7 @@ public class JdbcBookRepository implements BookRepository {
     public void deleteById(UUID id) {
         jdbcClient
                 .sql("DELETE FROM books WHERE id = :id")
-                .param("id", id.toString())
+                .param("id", id)
                 .update();
     }
 
