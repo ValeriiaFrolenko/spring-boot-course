@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Додати книгу</title>
+</head>
+<body>
+<h2>Додати нову книгу</h2>
+<form th:action="@{/books}" th:object="${book}" method="post">
+
+    <div>
+        <label>Назва:</label>
+        <input type="text" th:field="*{title}"/>
+        <div style="color: red;" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Помилка назви</div>
+    </div>
+
+    <div>
+        <label>Автор:</label>
+        <input type="text" th:field="*{author}"/>
+        <div style="color: red;" th:if="${#fields.hasErrors('author')}" th:errors="*{author}">Помилка автора</div>
+    </div>
+
+    <div>
+        <label>Жанр:</label>
+        <input type="text" th:field="*{genre}"/>
+        <div style="color: red;" th:if="${#fields.hasErrors('genre')}" th:errors="*{genre}">Помилка жанру</div>
+    </div>
+
+    <div>
+        <label>Рік публікації:</label>
+        <input type="number" th:field="*{publicationYear}"/>
+        <div style="color: red;" th:if="${#fields.hasErrors('publicationYear')}" th:errors="*{publicationYear}">Помилка року</div>
+    </div>
+
+    <div>
+        <label>Ціна:</label>
+        <input type="number" step="0.01" th:field="*{price}"/>
+        <div style="color: red;" th:if="${#fields.hasErrors('price')}" th:errors="*{price}">Помилка ціни</div>
+    </div>
+
+    <div>
+        <label>Кількість сторінок:</label>
+        <input type="number" th:field="*{pages}"/>
+        <div style="color: red;" th:if="${#fields.hasErrors('pages')}" th:errors="*{pages}">Помилка сторінок</div>
+    </div>
+
+    <button type="submit">Зберегти</button>
+    <a th:href="@{/books}">Скасувати</a>
+</form>
+</body>
+</html>

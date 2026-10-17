@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Список книг</title>
+</head>
+<body>
+<div>
+    Вітаємо, <span sec:authentication="name">Користувач</span>!
+    <form th:action="@{/logout}" method="post" style="display:inline;">
+        <button type="submit">Вийти</button>
+    </form>
+</div>
+
+<h2>Список книг</h2>
+
+<div th:if="${successMessage}" style="color: green;" th:text="${successMessage}"></div>
+
+<div sec:authorize="hasRole('ADMIN')" style="margin-bottom: 10px;">
+    <a th:href="@{/books/new}">Додати нову книгу</a>
+</div>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Назва</th>
+        <th>Автор</th>
+        <th>Рік</th>
+        <th>Ціна</th>
+        <th>Статус</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="b : ${books}">
+        <td th:text="${b.title}">Title</td>
+        <td th:text="${b.author}">Author</td>
+        <td th:text="${b.publicationYear}">2000</td>
+        <td th:text="${b.price}">0.0</td>
+        <td th:text="${b.status}">DRAFT</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
