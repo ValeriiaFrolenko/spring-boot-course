@@ -2,6 +2,7 @@ package vfrolenko.pr2.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BookController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class BookControllerTest {
 
     @Autowired
@@ -215,7 +217,6 @@ class BookControllerTest {
         mockMvc.perform(delete(BASE_URL + "/" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
     }
-    // --- publicationYear boundary ---
 
     @Test
     void create_publicationYearTooEarly_returns400() throws Exception {
@@ -265,8 +266,6 @@ class BookControllerTest {
                 .andExpect(status().isCreated());
     }
 
-    // --- pages boundary ---
-
     @Test
     void create_pagesTooFew_returns400() throws Exception {
         CreateBookRequest request = new CreateBookRequest("Clean Code", "Robert Martin", "Programming", 2008, 29.99, 0);
@@ -314,8 +313,6 @@ class BookControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
     }
-
-    // --- searchByName ---
 
     @Test
     void searchByName_matchFound_returnsOkWithList() throws Exception {

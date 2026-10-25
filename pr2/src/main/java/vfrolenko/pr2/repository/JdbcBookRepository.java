@@ -1,6 +1,5 @@
 package vfrolenko.pr2.repository;
 
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import vfrolenko.pr2.entity.Book;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Primary
 @Repository
 public class JdbcBookRepository implements BookRepository {
 
