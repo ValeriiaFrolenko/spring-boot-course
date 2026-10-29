@@ -1,0 +1,2 @@
+INSERT INTO books (id, title, author, genre, publication_year, price, pages, status)
+VALUES ('123e4567-e89b-12d3-a456-426614174000', 'Clean Code', 'Robert Martin', 'Programming', 2008, 29.99, 431, 'DRAFT');
