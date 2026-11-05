@@ -1,6 +1,7 @@
 package vfrolenko.pr2.service;
 
 import org.springframework.stereotype.Service;
+import vfrolenko.pr2.aop.LogMethodCall;
 import vfrolenko.pr2.dto.book.CreateBookRequest;
 import vfrolenko.pr2.dto.book.UpdateBookRequest;
 import vfrolenko.pr2.dto.book.UpdateBookStatusRequest;
@@ -31,11 +32,13 @@ public class BookServiceImpl implements BookService {
                 .collect(Collectors.toMap(BookPricingStrategy::name, Function.identity()));
     }
 
+    @LogMethodCall("findAllBooks")
     @Override
     public List<Book> findAll() {
         return bookRepository.findAll();
     }
 
+    @LogMethodCall("findBookById")
     @Override
     public Optional<Book> findById(UUID id) {
         return bookRepository.findById(id);
@@ -59,6 +62,7 @@ public class BookServiceImpl implements BookService {
         return strategy.calculatePrice(book);
     }
 
+    @LogMethodCall("createBook")
     @Override
     public Book create(CreateBookRequest request) {
         if (bookRepository.existsByTitleAndAuthor(request.title(), request.author())) {
